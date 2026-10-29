@@ -28,6 +28,7 @@ export async function getDb(): Promise<Db> {
       maxPoolSize: 10,
       serverSelectionTimeoutMS: 7000,
       connectTimeoutMS: 10000,
+      tls: true,
     });
     global._mongoClientPromise = client.connect();
   }
@@ -39,9 +40,15 @@ export async function getDb(): Promise<Db> {
     // Reset client promise so subsequent requests can retry
     global._mongoClientPromise = undefined;
     const msg = err?.message || String(err);
-    if (msg.includes("ETIMEDOUT") || msg.includes("Server selection timed out") || msg.includes("whitelist")) {
+    if (
+      msg.includes("SSL alert number 80") ||
+      msg.includes("tlsv1 alert internal error") ||
+      msg.includes("ETIMEDOUT") ||
+      msg.includes("Server selection timed out") ||
+      msg.includes("whitelist")
+    ) {
       throw new Error(
-        "MongoDB Atlas connection timed out! Please ensure MongoDB Atlas -> Network Access has IP '0.0.0.0/0' (Allow Access From Anywhere) enabled for Vercel."
+        "MongoDB Atlas IP Blocked! Go to MongoDB Atlas -> Network Access -> Add IP Address -> Select 'Allow Access from Anywhere' (0.0.0.0/0)."
       );
     }
     throw new Error(`MongoDB connection failed: ${msg}`);
