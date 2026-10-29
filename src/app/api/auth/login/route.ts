@@ -4,9 +4,9 @@ import { initDatabase } from "@/lib/db-init";
 import { comparePassword, signToken, AUTH_COOKIE_NAME } from "@/lib/auth";
 
 export async function POST(req: NextRequest) {
-  await initDatabase();
-
   try {
+    await initDatabase();
+
     const { username, password } = await req.json();
 
     if (!username || !password) {
@@ -59,10 +59,10 @@ export async function POST(req: NextRequest) {
     });
 
     return response;
-  } catch (err) {
+  } catch (err: any) {
     console.error("Login error:", err);
     return NextResponse.json(
-      { error: "An internal error occurred during login." },
+      { error: err?.message || "An internal error occurred during login." },
       { status: 500 }
     );
   }
